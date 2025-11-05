@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do Web App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+      background-size: 200% 200%;
+      animation: gradientMove 8s ease infinite;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      padding: 30px 20px;
+    }
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #00eaff;
+      text-shadow: 0 0 10px #00eaff;
+      margin-bottom: 15px;
+    }
+    .todo-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 25px;
+      width: 420px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+    .todo-input {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input, textarea {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #ccc;
+    }
+
+    button {
+      background: #00eaff;
+      color: #000;
+      border: none;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #00bcd4;
+      transform: scale(1.05);
+    }
+    .task-list {
+      list-style: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .task {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      transition: 0.3s;
+      position: relative;
+    }
+    .task.completed {
+      text-decoration: line-through;
+      background: rgba(0, 255, 150, 0.3);
+    }
+    .task p {
+      margin: 5px 0;
+    }
+
+    .task small {
+      color: #ccc;
+      font-size: 0.8rem;
+    }
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .actions button {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+    }
+    .actions button:hover {
+      background: #00eaff;
+      color: #000;
+    }
+    footer {
+      margin-top: 20px;
+      color: #ddd;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>To-Do Web Application</h1>
+  <div class="todo-container">
+    <div class="todo-input">
+      <input type="text" id="taskTitle" placeholder="Enter task title..." />
+      <textarea id="taskDetails" placeholder="Enter task details..."></textarea>
+      <input type="datetime-local" id="taskDate" />
+      <button onclick="addTask()">Add Task</button>
+    </div>
+    <ul class="task-list" id="taskList"></ul>
+  </div>
+
+  <footer>SkillCraft Technology | Task 04</footer>
+
+  <script>
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+    function saveTasks() {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function renderTasks() {
+      const taskList = document.getElementById("taskList");
+      taskList.innerHTML = "";
+
+      tasks.forEach((task, index) => {
+        const li = document.createElement("li");
+        li.className = `task ${task.completed ? "completed" : ""}`;
+        li.innerHTML = `
+          <p><strong>${task.title}</strong></p>
+          <p>${task.details}</p>
+          <small>📅 ${task.date}</small>
+          <div class="actions">
+            <button onclick="toggleComplete(${index})">${task.completed ? "Undo" : "Done"}</button>
+            <button onclick="editTask(${index})">Edit</button>
+            <button onclick="deleteTask(${index})">Delete</button>
+          </div>
+        `;
+        taskList.appendChild(li);
+      });
+    }
+
+    function addTask() {
+      const title = document.getElementById("taskTitle").value.trim();
+      const details = document.getElementById("taskDetails").value.trim();
+      const date = document.getElementById("taskDate").value;
+
+      if (!title || !date) {
+        alert("Please enter a task title and date!");
+        return;
+      }
+
+      tasks.push({ title, details, date, completed: false });
+      saveTasks();
+      renderTasks();
+
+      document.getElementById("taskTitle").value = "";
+      document.getElementById("taskDetails").value = "";
+      document.getElementById("taskDate").value = "";
+    }
+
+    function toggleComplete(index) {
+      tasks[index].completed = !tasks[index].completed;
+      saveTasks();
+      renderTasks();
+    }
+
+    function editTask(index) {
+      const newTitle = prompt("Edit task title:", tasks[index].title);
+      const newDetails = prompt("Edit task details:", tasks[index].details);
+      const newDate = prompt("Edit date & time:", tasks[index].date);
+      if (newTitle && newDate) {
+        tasks[index].title = newTitle;
+        tasks[index].details = newDetails;
+        tasks[index].date = newDate;
+        saveTasks();
+        renderTasks();
+      }
+    }
+
+    function deleteTask(index) {
+      if (confirm("Are you sure you want to delete this task?")) {
+        tasks.splice(index, 1);
+        saveTasks();
+        renderTasks();
+      }
+    }
+
+    renderTasks();
+  </script>
+</body>
+</html>
